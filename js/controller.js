@@ -203,26 +203,60 @@ var Controller = function() {
       console.log("frequency value is not default!");
       __changeFrequency(parseInt(inSettings.frequency, 10));
     }
-    var storages = FxDeviceStorage.getAvailableStorages();
+    /*
+     * Checking if device support navigator.getDevieStorage()
+     */
     var select = document.getElementById("storage");
-    if (select.length === 0) {
-      for (var i = 0; i < storages.length; i++) {
-        var o = document.createElement("option");
-        o.value = storages[i].id;
-        o.innerHTML = storages[i].name;
-        o.setAttribute("data-l10n-id", storages[i].name);
-        select.appendChild(o);
+    if (FxDeviceStorage.compatible) {
+      var storages = FxDeviceStorage.getAvailableStorages();
+      if (select.length === 0) {
+        for (var i = 0; i < storages.length; i++) {
+          var o = document.createElement("option");
+          o.value = storages[i].id;
+          o.innerHTML = storages[i].name;
+          o.setAttribute("data-l10n-id", storages[i].name);
+          select.appendChild(o);
+        }
       }
-    }
-    if (!inSettings.storage) {
-      console.log("storage is not present in settings");
-      savingSettings("storage", "0");
+      if (!inSettings.storage) {
+        console.log("storage is not present in settings");
+        savingSettings("storage", "0");
+      } else {
+        FxDeviceStorage.setUserStorage(inSettings.storage);
+      }
     } else {
-      FxDeviceStorage.setUserStorage(inSettings.storage);
+      var eo = document.createElement("option");
+      eo.innerHTML = "no storage available";
+      eo.setAttribute("data-l10n-id", "no-storage-available");
+      select.appendChild(eo);
+      select.setAttribute("disabled", true);
+      /*
+       * As device does not support navigator.getDeviceStorage(), we disable
+       * all options linked to this specification.
+       */
+      __noStorageSupport();
     }
 
     __updateConfigValues(inSettings);
   }
+
+  function __noStorageSupport() {
+    /*
+     * Importing
+     */
+    var ib = document.getElementById("btn-import");
+    ib.setAttribute("disabled", true);
+    /*
+     * Sharing
+     */
+    var rs = document.getElementsByName("radio-share");
+    for (var i = 0; i < rs.length; i++) {
+      if (rs[i].value === "on-device") {
+        rs[i].setAttribute("disabled", true);
+      }
+    }
+  }
+
   function __getConfigError(inEvent) { console.log("__getConfigError ", inEvent); }
 
   function savingSettings(inKey, inValue) {

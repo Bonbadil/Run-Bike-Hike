@@ -4,11 +4,17 @@
 
 var FxDeviceStorage = function() {
   "use strict";
-  var user_storage = navigator.getDeviceStorage("sdcard");
-  var storage_id = 0;
-  var storage_name = user_storage.storageName;
-  var available_storages = [];
 
+  var compatible = true;
+
+  if(navigator.getDeviceStorage) {
+    var user_storage = navigator.getDeviceStorage("sdcard");
+    var storage_id = 0;
+    var storage_name = user_storage.storageName;
+    var available_storages = [];
+  } else {
+    compatible = false;
+  }
   /**
    * Get the list of device available storages
    *
@@ -130,6 +136,7 @@ var FxDeviceStorage = function() {
   }
 
   return {
+    compatible:           compatible,
     getAvailableStorages: getAvailableStorages,
     getDefault:           getDefault,
     getFilesFromPath:     getFilesFromPath,
